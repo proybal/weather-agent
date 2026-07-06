@@ -33,14 +33,14 @@ def make_session():
     return session
 
 CLOSINGS = [
-    "Enjoy the music on KANW, and have a wonderful day.\n\n— Paul Roybal",
-    "Stay safe, stay informed, and enjoy New Mexico Music on KANW.\n\n— Paul Roybal",
-    "Wherever your travels take you across New Mexico, have a great day with KANW.\n\n— Paul Roybal",
-    "Thanks for listening to KANW—your home for New Mexico Music.\n\n— Paul Roybal",
-    "Have a safe day, and thank you for making KANW part of it.\n\n— Paul Roybal",
-    "From all of us at KANW, enjoy today's forecast and the music ahead.\n\n— Paul Roybal",
-    "Here's wishing you clear skies and great New Mexico Music on KANW.\n\n— Paul Roybal",
-    "Until next time, enjoy the weather and keep it tuned to KANW.\n\n— Paul Roybal",
+    "Enjoy the music on KANW, and have a wonderful day.",
+    "Stay safe, stay informed, and enjoy New Mexico Music on KANW.",
+    "Wherever your travels take you across New Mexico, have a great day with KANW.",
+    "Thanks for listening to KANW—your home for New Mexico Music.",
+    "Have a safe day, and thank you for making KANW part of it.",
+    "From all of us at KANW, enjoy today's forecast and the music ahead.",
+    "Here's wishing you clear skies and great New Mexico Music on KANW.",
+    "Until next time, enjoy the weather and keep it tuned to KANW.",
 ]
 
 SESSION = make_session()
