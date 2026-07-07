@@ -2,6 +2,8 @@ import os
 import re
 import html
 import smtplib
+from pathlib import Path
+
 import requests
 import argparse
 import random
@@ -322,8 +324,8 @@ def get_sunrise_sunset():
     )
 
     s = sun(city.observer, date=datetime.now(TZ).date(), tzinfo=TZ)
-    sunrise = s["sunrise"].strftime("%-I:%M %p")
-    sunset = s["sunset"].strftime("%-I:%M %p")
+    sunrise = s["sunrise"].strftime("%I:%M %p").lstrip("0")
+    sunset = s["sunset"].strftime("%I:%M %p").lstrip("0")
 
     return f"Sunrise in Albuquerque is {sunrise}. Sunset is {sunset}."
 
@@ -691,10 +693,12 @@ def main():
         print(text_message)
         print("\n==============================\n")
 
-        with open("/tmp/weather_preview.html", "w", encoding="utf-8") as f:
+        preview_file = Path(__file__).parent / "tmp" / "weather_preview.html"
+
+        with open(preview_file, "w", encoding="utf-8") as f:
             f.write(html_message)
 
-        print("HTML preview written to /tmp/weather_preview.html\n")
+        print(f"HTML preview written to {preview_file}")
 
     send_email(
         "KANW NM Music Weather",
