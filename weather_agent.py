@@ -450,7 +450,7 @@ def build_weather_email_html(statewide, metro, sun, closing):
 <div style="border-bottom:4px solid #1f5f99;padding-bottom:12px;margin-bottom:22px;">
 <h1 style="margin:0;color:#1f5f99;">KANW New Mexico Weather</h1>
 <p style="margin-top:6px;color:#666;">
-Automated weather briefing for New Mexico Music
+Automated weather briefing for 89.1 KANW FM
 </p>
 </div>
 
