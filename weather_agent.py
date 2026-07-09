@@ -251,6 +251,7 @@ Rules:
 - Use only the facts provided.
 - Do not invent temperatures, warnings, locations, or timing.
 - Do not mention National Weather Service key messages.
+- Do not refer to the report as rewritten.
 - Do not use bullets.
 - Write 3 short sentences.
 - Plain English.
