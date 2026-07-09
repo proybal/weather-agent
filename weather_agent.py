@@ -582,10 +582,11 @@ Automated weather briefing for 89.1 KANW FM
 """
 
 
-def send_email(subject, text_body, html_body=None):
+def send_email(subject, text_body, html_body=None, to_email=None):
     msg = EmailMessage()
     msg["From"] = os.getenv("FROM_EMAIL", "").strip()
-    msg["To"] = os.getenv("TO_EMAIL", "").strip()
+    recipient = to_email or os.getenv("TO_EMAIL", "").strip()
+    msg["To"] = recipient
     msg["Subject"] = subject
 
     msg.set_content(text_body)
@@ -727,6 +728,10 @@ def main():
         action="store_true",
         help="Run immediately without checking Yahoo Calendar.",
     )
+    parser.add_argument(
+        "--to",
+        help="Override destination email address(es). Separate multiple addresses with commas.",
+    )
     args = parser.parse_args()
 
     if not args.force:
@@ -756,6 +761,8 @@ def main():
         closing,
     )
     if args.force:
+        destination = args.to or os.getenv("TO_EMAIL")
+        print(f"Sending email to: {destination}\n")
         print("==== WEATHER EMAIL (TEXT) ====\n")
         print(text_message)
         print("\n==============================\n")
@@ -771,6 +778,7 @@ def main():
         "KANW NM Music Weather",
         text_message,
         html_message,
+        args.to,
     )
 
     if args.force:
