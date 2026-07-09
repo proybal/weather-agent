@@ -220,6 +220,70 @@ def get_latest_afd_text():
     return " ".join(good)
 
 
+def ask_ollama(prompt):
+    url = "http://127.0.0.1:11434/api/generate"
+
+    payload = {
+        "model": "llama3.2:3b",
+        "prompt": prompt,
+        "stream": False,
+        "options": {
+            "num_ctx": 2048,
+            "temperature": 0.1,
+            "top_p": 0.4,
+            "repeat_penalty": 1.15,
+            "num_predict": 120,
+        },
+    }
+
+    r = SESSION.post(url, json=payload, timeout=120)
+    r.raise_for_status()
+
+    return r.json().get("response", "").strip()
+
+def rewrite_statewide_with_ollama(facts):
+    prompt = f"""
+You are writing a short statewide weather forecast for 89.1 KANW FM in New Mexico.
+
+Rewrite the following National Weather Service key messages into a concise public radio weather forecast.
+
+Rules:
+- Use only the facts provided.
+- Do not invent temperatures, warnings, locations, or timing.
+- Do not mention National Weather Service key messages.
+- Do not use bullets.
+- Write 3 short sentences.
+- Plain English.
+- Professional radio style.
+- End with a complete sentence.
+
+Facts:
+{facts}
+"""
+
+    try:
+        text = ask_ollama(prompt)
+
+        bad_phrases = [
+            "here is",
+            "facts provided",
+            "national weather service key messages",
+            "as an ai",
+            "i cannot",
+        ]
+
+        if len(text) < 60:
+            raise RuntimeError("Ollama response too short")
+
+        if any(p in text.lower() for p in bad_phrases):
+            raise RuntimeError("Ollama response not clean")
+
+        return text
+
+    except Exception as ex:
+        print(f"Ollama rewrite skipped: {ex}")
+        return facts
+
 def get_statewide_forecast():
     try:
         products = get_json(
@@ -252,7 +316,8 @@ def get_statewide_forecast():
             messages.append(b)
 
         if messages:
-            forecast = " ".join(messages)
+            raw_forecast = " ".join(messages)
+            forecast = rewrite_statewide_with_ollama(raw_forecast)
         else:
             forecast = (
                 "Weather conditions will vary across New Mexico today. "
