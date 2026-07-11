@@ -19,6 +19,7 @@ from dotenv import load_dotenv
 from requests.adapters import HTTPAdapter
 from urllib3.util.retry import Retry
 
+load_dotenv()
 
 def make_session():
     session = requests.Session()
@@ -47,7 +48,6 @@ CLOSINGS = [
 ]
 
 SESSION = make_session()
-load_dotenv()
 
 TZ = ZoneInfo("America/Denver")
 STATE_FILE = "state.txt"
@@ -71,7 +71,6 @@ HEADERS = {
     "User-Agent": "burquebro-weather-agent, proybal@yahoo.com",
     "Accept": "application/geo+json",
 }
-
 
 def get_json(url):
     if url in CACHE:
@@ -221,25 +220,24 @@ def get_latest_afd_text():
 
 
 def ask_ollama(prompt):
-    url = "http://127.0.0.1:11434/api/generate"
+    ollama_url = os.getenv("OLLAMA_URL", "http://127.0.0.1:11434")
+    model = os.getenv("OLLAMA_MODEL", "llama3.2:3b")
+
+    url = f"{ollama_url}/api/generate"
 
     payload = {
-        "model": "llama3.2:3b",
+        "model": model,
         "prompt": prompt,
         "stream": False,
         "options": {
-            "num_ctx": 2048,
             "temperature": 0.1,
-            "top_p": 0.4,
-            "repeat_penalty": 1.15,
             "num_predict": 120,
         },
     }
 
     r = SESSION.post(url, json=payload, timeout=120)
     r.raise_for_status()
-
-    return r.json().get("response", "").strip()
+    return r.json()["response"].strip()
 
 def rewrite_statewide_with_ollama(facts):
     prompt = f"""
@@ -729,16 +727,22 @@ def main():
         help="Run immediately without checking Yahoo Calendar.",
     )
     parser.add_argument(
+        "--preview",
+        action="store_true",
+        help="Generate the weather briefing without sending email.",
+    )
+    parser.add_argument(
         "--to",
         help="Override destination email address(es). Separate multiple addresses with commas.",
     )
     args = parser.parse_args()
 
-    if not args.force:
+    if args.force or args.preview:
+        mode = "Preview" if args.preview else "Force"
+        print(f"{mode} mode: skipping Yahoo Calendar trigger.\n")
+    else:
         if not should_trigger():
             return
-    else:
-        print("Force mode: skipping Yahoo Calendar trigger.\n")
 
     statewide = get_statewide_forecast()
     metro = get_metro_forecast()
@@ -760,19 +764,25 @@ def main():
         sun,
         closing,
     )
-    if args.force:
+
+    if args.force or args.preview:
         destination = args.to or os.getenv("TO_EMAIL")
-        print(f"Sending email to: {destination}\n")
+        print(f"Destination email: {destination}\n")
         print("==== WEATHER EMAIL (TEXT) ====\n")
         print(text_message)
         print("\n==============================\n")
 
         preview_file = Path(__file__).parent / "tmp" / "weather_preview.html"
+        preview_file.parent.mkdir(exist_ok=True)
 
         with open(preview_file, "w", encoding="utf-8") as f:
             f.write(html_message)
 
         print(f"HTML preview written to {preview_file}")
+
+    if args.preview:
+        print("Preview complete. Email not sent.")
+        return
 
     send_email(
         "KANW NM Music Weather",
