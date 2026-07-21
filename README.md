@@ -1,6 +1,6 @@
 # 🌦️ KANW Weather Agent
 
-An automated weather briefing generator for **KANW 89.1 FM New Mexico Music**.
+An automated weather briefing generator for **KANW 89.1 FM New Mexico**.
 
 The Weather Agent collects current forecast information from the National Weather Service, generates a professional radio-ready weather briefing for New Mexico, and emails both HTML and plain-text versions to the host before each scheduled broadcast.
 
