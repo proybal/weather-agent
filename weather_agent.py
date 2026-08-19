@@ -247,6 +247,7 @@ Rewrite the following National Weather Service key messages into a concise publi
 
 Rules:
 - Use only the facts provided.
+- Do not include introduction
 - Do not invent temperatures, warnings, locations, or timing.
 - Do not mention National Weather Service key messages.
 - Do not refer to the report as rewritten.
