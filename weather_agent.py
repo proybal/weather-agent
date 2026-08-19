@@ -244,7 +244,8 @@ def rewrite_statewide_with_ollama(facts):
 
     prompt = f"""
     Do not include an introduction to your report.
-    You are writing a statewide New Mexico weather forecast for radio.
+    
+    You are writing a generalized statewide New Mexico weather forecast for radio.
 
     Use the National Weather Service information below to create a concise,
     natural-sounding statewide forecast.
@@ -252,13 +253,9 @@ def rewrite_statewide_with_ollama(facts):
     Do not list cities one by one. Instead, compare regions and identify the
     overall weather pattern across New Mexico.
 
-    Discuss when relevant:
-    - northern New Mexico
-    - central New Mexico
-    - western New Mexico
-    - eastern and southeastern New Mexico
-    - southern New Mexico
-    - mountain areas
+    Do not confuse highs with low temperatures.
+
+    Discuss when relevant and significantly more detailed:
     - temperature differences
     - thunderstorm coverage and timing
     - areas with the highest precipitation chances
