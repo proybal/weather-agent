@@ -240,26 +240,42 @@ def ask_ollama(prompt):
     return r.json()["response"].strip()
 
 def rewrite_statewide_with_ollama(facts):
+    statewide_data = build_statewide_weather_data()
+
     prompt = f"""
-You are writing a short statewide weather forecast for 89.1 KANW FM in New Mexico.
+    Do not include an introduction to your report.
+    You are writing a statewide New Mexico weather forecast for radio.
 
-Rewrite the following National Weather Service key messages into a concise public radio weather forecast.
+    Use the National Weather Service information below to create a concise,
+    natural-sounding statewide forecast.
 
-Rules:
-- Use only the facts provided.
-- Do not include introduction
-- Do not invent temperatures, warnings, locations, or timing.
-- Do not mention National Weather Service key messages.
-- Do not refer to the report as rewritten.
-- Do not use bullets.
-- Write 3 short sentences.
-- Plain English.
-- Professional radio style.
-- End with a complete sentence.
+    Do not list cities one by one. Instead, compare regions and identify the
+    overall weather pattern across New Mexico.
 
-Facts:
-{facts}
-"""
+    Discuss when relevant:
+    - northern New Mexico
+    - central New Mexico
+    - western New Mexico
+    - eastern and southeastern New Mexico
+    - southern New Mexico
+    - mountain areas
+    - temperature differences
+    - thunderstorm coverage and timing
+    - areas with the highest precipitation chances
+    - wind
+    - significant changes tonight or tomorrow
+    - hazards mentioned by the National Weather Service
+
+    Use varied conversational language suitable for a radio announcer.
+    Avoid repeatedly saying "expect", "look for", or "there is a chance".
+    Do not invent weather conditions that are not supported by the data.
+    Do not include headings or bullet points.
+
+    Write one concise paragraph, generally 80 to 130 words.
+
+    REPRESENTATIVE NEW MEXICO FORECASTS:
+    {statewide_data}
+    """
 
     try:
         text = ask_ollama(prompt)
@@ -474,6 +490,61 @@ def build_city_rows_html():
         """
 
     return rows
+
+
+def build_statewide_weather_data():
+    locations = {
+        "Albuquerque": (35.0844, -106.6504),
+        "Santa Fe": (35.6870, -105.9378),
+        "Farmington": (36.7281, -108.2187),
+        "Gallup": (35.5281, -108.7426),
+        "Las Vegas": (35.5942, -105.2228),
+        "Roswell": (33.3943, -104.5230),
+        "Ruidoso": (33.3317, -105.6730),
+        "Las Cruces": (32.3199, -106.7637),
+    }
+
+    lines = []
+
+    for name, (lat, lon) in locations.items():
+        try:
+            point = get_json(
+                f"https://api.weather.gov/points/{lat},{lon}"
+            )
+
+            props = point["properties"]
+
+            forecast = get_json(props["forecast"])
+            periods = forecast["properties"]["periods"]
+
+            if not periods:
+                continue
+
+            current = periods[0]
+
+            line = (
+                f"{name}: "
+                f"{current.get('name', '')}. "
+                f"{current.get('detailedForecast', '')} "
+                f"Temperature {current.get('temperature', '')}"
+                f"{current.get('temperatureUnit', '')}. "
+                f"Wind {current.get('windDirection', '')} "
+                f"{current.get('windSpeed', '')}."
+            )
+
+            pop = (
+                current.get("probabilityOfPrecipitation") or {}
+            ).get("value")
+
+            if pop is not None:
+                line += f" Precipitation chance {pop}%."
+
+            lines.append(line)
+
+        except Exception as e:
+            print(f"Statewide forecast data failed for {name}: {e}")
+
+    return "\n".join(lines)
 
 
 def build_weather_email_html(statewide, metro, sun, closing):
